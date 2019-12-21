@@ -1,9 +1,11 @@
 import React, { Component } from 'react';
-import logo from '../logo.png';
+// import logo from '../logo.png';
 import './App.css';
 import Web3 from 'web3';
 import Navbar from './Navbar'
-import Marketplace from '../abis/Marketplace.json'
+// import Marketplace from '../abis/Marketplace.json'
+import CropMarket from '../abis/CropMarket.json'
+import Main from './Main'
 
 class App extends Component {
 
@@ -31,10 +33,32 @@ class App extends Component {
     const accounts = await web3.eth.getAccounts()
     this.setState({ account: accounts[0] })
     const networkId = await web3.eth.net.getId()
-    const networkData = Marketplace.networks[networkId]
+    const networkData = CropMarket.networks[networkId]
     if(networkData) {
-      const marketplace = web3.eth.Contract(Marketplace.abi, networkData.address)
-      console.log(marketplace)
+      const cropmarket = web3.eth.Contract(CropMarket.abi, networkData.address)
+      this.setState({ cropmarket })
+      const cropCountHex = await cropmarket.methods.cropCount().call()
+      const cropCount = parseInt(cropCountHex._hex)
+      this.setState({cropCount})
+      console.log(cropCount)
+      for(let i = 1; i <= cropCount; i++){
+        const crop = await cropmarket.methods.crops(i).call()
+        console.log(crop)
+        this.setState({
+          crops: [...this.state.crops, crop]
+        })
+      }
+      // console.log(this.state.crops)
+      // const productCount = await marketplace.methods.productCount().call()
+      // this.setState({ productCount })
+      // Load products
+      // for (var i = 1; i <= productCount; i++) {
+      //   const product = await marketplace.methods.products(i).call()
+      //   this.setState({
+      //     products: [...this.state.products, product]
+      //   })
+      // }
+      // this.setState({ loading: false})
     } else {
       window.alert('Marketplace contract not deployed to detected network.')
     }
@@ -44,11 +68,40 @@ class App extends Component {
     super(props)
     this.state = {
       account: '',
-      productCount: 0,
-      products: [],
-      loading: true
+      // productCount: 0,
+      // products: [],
+      cropCount: 0,
+      crops: [],
+      loading: false
     }
+    // this.createProduct = this.createProduct.bind(this)
+    // this.purchaseProduct = this.purchaseProduct.bind(this)
+    this.releaseStock = this.releaseStock.bind(this)
   }
+
+  // createProduct(name, price) {
+  //   this.setState({ loading: true })
+  //   this.state.marketplace.methods.createProduct(name, price).send({ from: this.state.account })
+  //   .once('receipt', (receipt) => {
+  //     this.setState({ loading: false })
+  //   })
+  // }
+
+  // purchaseProduct(id, price) {
+  //   this.setState({ loading: true })
+  //   this.state.marketplace.methods.purchaseProduct(id).send({ from: this.state.account, value: price })
+  //   .once('receipt', (receipt) => {
+  //     this.setState({ loading: false })
+  //   })
+  // }
+
+    releaseStock(quantity, price){
+      // this.setState({})
+      this.state.cropmarket.methods.releaseStock(quantity,price).send({from: this.state.account})
+      .once('receipt',(receipt) => {
+        console.log('Success');
+      })
+    }
 
   render() {
     return (
@@ -56,29 +109,16 @@ class App extends Component {
         <Navbar account={this.state.account} />
         <div className="container-fluid mt-5">
           <div className="row">
-            <main role="main" className="col-lg-12 d-flex text-center">
-              <div className="content mr-auto ml-auto">
-                <a
-                  href="http://www.dappuniversity.com/bootcamp"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <img src={logo} className="App-logo" alt="logo" />
-                </a>
-                <h1>Dapp University Starter Kit</h1>
-                <p>
-                  Edit <code>src/components/App.js</code> and save to reload.
-                </p>
-                <a
-                  className="App-link"
-                  href="http://www.dappuniversity.com/bootcamp"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  LEARN BLOCKCHAIN <u><b>NOW! </b></u>
-                </a>
-              </div>
-            </main>
+          <main role="main" className="col-lg-12 d-flex">
+            { this.state.loading
+              ? <div id="loader" className="text-center"><p className="text-center">Loading...</p></div>
+              : <Main
+                crops={this.state.crops}
+                releaseStock={this.releaseStock}
+                // purchaseProduct={this.purchaseProduct}
+                />
+            }
+          </main>
           </div>
         </div>
       </div>
