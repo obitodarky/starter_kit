@@ -4,7 +4,7 @@ pragma solidity ^0.5.0;
 contract CropMarket {
     uint public cropCount = 0;
     struct Crop{
-        address owner;
+        address payable owner;
         uint256 quantity;
         uint256 price;
         uint256 cropId;
@@ -20,13 +20,6 @@ contract CropMarket {
     
     uint256 public transactionId;
     mapping(uint256 => Transaction) public trasanctions;
-    
-    struct User{
-        uint256 quantity;
-    }
-    
-    uint256 public userId;
-    mapping(uint256 => User) public users;
     
     event NewCrop(
         uint256 indexed cropId
@@ -45,17 +38,17 @@ contract CropMarket {
     
     function purchaseStock(uint256 cropid, uint256 quantity) public payable{
         Crop storage crop = crops[cropid];
-        require(
-            quantity < crop.quantity,
-            "Not enough quantity"
-        );
+        // require(
+        //     quantity <= crop.quantity,
+        //     "Not enough quantity"
+        // );
         
-        require(
-            msg.value==crop.price*quantity,
-            "Not enough balance"
-        );
+        // require(
+        //     msg.value==crop.price*quantity,
+        //     "Not enough balance"
+        // );
         
-        _sendFunds(crop.owner, msg.value);
+        address(crop.owner).transfer(msg.value);
         refilStock(cropid, quantity);
     }
     
@@ -64,9 +57,5 @@ contract CropMarket {
         Crop storage crop = crops[cropid];
         crop.quantity = crop.quantity - quantity;
         emit NewTransaction(cropid, transactionId++);
-    }
-    
-    function _sendFunds(address rec, uint256 value) internal{
-        address(uint160(rec)).transfer(value);
     }
 }

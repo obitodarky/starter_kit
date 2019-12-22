@@ -77,6 +77,7 @@ class App extends Component {
     // this.createProduct = this.createProduct.bind(this)
     // this.purchaseProduct = this.purchaseProduct.bind(this)
     this.releaseStock = this.releaseStock.bind(this)
+    this.purchaseStock = this.purchaseStock.bind(this)
   }
 
   // createProduct(name, price) {
@@ -103,6 +104,13 @@ class App extends Component {
       })
     }
 
+    purchaseStock(cropid,quantity,total){
+      this.state.cropmarket.methods.purchaseStock(cropid,quantity).send({from: this.state.account, value: total})
+      .once('receipt',(receipt) => {
+        console.log('Success');
+      })
+    }
+
   render() {
     return (
       <div>
@@ -115,7 +123,7 @@ class App extends Component {
               : <Main
                 crops={this.state.crops}
                 releaseStock={this.releaseStock}
-                // purchaseProduct={this.purchaseProduct}
+                purchaseStock={this.purchaseStock}
                 />
             }
           </main>

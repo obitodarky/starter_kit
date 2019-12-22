@@ -2,6 +2,12 @@ import React, { Component } from 'react';
 
 class Main extends Component {
 
+  myFunc(price,cropId){
+    let quant = prompt("Enter quantity");
+    let qty = parseInt(quant);
+    this.props.purchaseStock(cropId,qty,price*qty)
+  }
+
   render() {
     return (
       <div id="content">
@@ -70,25 +76,18 @@ class Main extends Component {
             </tr>
           </thead>
           <tbody id="cropList">
-          { this.props.crops.map((crop, key) => {
+          {this.props.crops.map((crop, key) => {
             return(
                 <tr key={key}>
                 <td>{parseInt(crop.quantity._hex)}</td>
                 <td>{window.web3.utils.fromWei(crop.price._hex, 'Ether')} Eth</td>
                 <td>{crop.owner}</td>
                 <td>
-                    {/* { !crop.purchased
-                    ? <button
-                        name={crop.id}
-                        value={crop.price}
-                        onClick={(event) => {
-                            this.props.purchaseProduct(event.target.name, event.target.value)
-                        }}
-                        >
-                        Buy
-                        </button>
-                    : null
-                    } */}
+                    { (crop.quantity>0)
+                    ? 
+                      <button type="submit" value="buy" id={key+"butt"} onClick={(price,id) => this.myFunc(crop.price._hex,crop.cropId)}>BUY</button>
+                      : null
+                    }
                     </td>
                 </tr>
             )
